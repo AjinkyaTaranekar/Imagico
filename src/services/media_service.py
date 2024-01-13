@@ -83,7 +83,7 @@ class MediaService:
             )
             filepath_webp = Path(f"{filepath}.webp")
 
-            if not filepath.exists():
+            if not filepath.exists() or (webp_supported and not filepath_webp.exists()):
                 original_filepath = (
                     UPLOAD_DIR
                     / filename
@@ -96,9 +96,8 @@ class MediaService:
                     raise FileNotFoundError(f"Original File Not found {filename}")
                 create_directory(subdirectory)
 
-                image = (
-                    Image.open(original_filepath).convert("RGB").resize((width, height))
-                )
+                image = Image.open(original_filepath).convert("RGB")
+                image = image.resize((width or image.width, height or image.height))
 
                 # Save the image with appropriate compression and optimization
                 save_params = {
