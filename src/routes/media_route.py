@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, File, Header, HTTPException, UploadFile, status
 
 from ..constants.constants import DEFAULT_HEIGHT, DEFAULT_QUALITY, DEFAULT_WIDTH
 from ..models.media_quality import MediaQuality
@@ -17,6 +19,7 @@ async def create_upload_files(files: list[UploadFile] = File(...)):
 @media_router.get("/get/{filename}")
 async def get_uploaded_file(
     filename: str,
+    user_agent: Annotated[str | None, Header()] = None,
     width: int = DEFAULT_WIDTH,
     height: int = DEFAULT_HEIGHT,
     quality: MediaQuality = DEFAULT_QUALITY,
@@ -24,7 +27,11 @@ async def get_uploaded_file(
 ):
     try:
         return await media_service.get_uploaded_file(
-            filename=filename, width=width, height=height, quality=quality
+            filename=filename,
+            user_agent_string=user_agent,
+            width=width,
+            height=height,
+            quality=quality,
         )
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="File not found")
