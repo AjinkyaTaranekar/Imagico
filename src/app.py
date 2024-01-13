@@ -4,7 +4,6 @@ from fastapi.responses import HTMLResponse
 
 from .routes.media_route import media_router
 
-
 app = FastAPI(
     title="Imagico",
     swagger_ui_parameters={
@@ -37,4 +36,3 @@ app.add_middleware(
 )
 
 app.include_router(media_router, prefix="/api/v1")
-

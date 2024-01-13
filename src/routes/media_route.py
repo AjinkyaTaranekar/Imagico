@@ -1,31 +1,26 @@
-from pathlib import Path
+from fastapi import APIRouter, File, UploadFile, status
 
-from fastapi import APIRouter, File, HTTPException, UploadFile
-from fastapi.responses import FileResponse
+from ..models.media_quality import MediaQuality
+from ..services.media_service import MediaService
 
 media_router = APIRouter(tags=["Media"])
-
-UPLOAD_DIR = Path("uploads")
-UPLOAD_DIR.mkdir(exist_ok=True)
+media_service = MediaService()
 
 
-@media_router.post("/uploadfiles/")
+@media_router.post("/uploadfiles/", status_code=status.HTTP_201_CREATED)
 async def create_upload_files(
     files: list[UploadFile] = File(...),
 ):
-    filenames = []
-    for file in files:
-        contents = await file.read()
-        filepath = UPLOAD_DIR / file.filename
-        with open(filepath, "wb") as f:
-            f.write(contents)
-        filenames.append(file.filename)
-    return {"filenames": filenames}
+    return await media_service.create_upload_files(files=files)
 
 
 @media_router.get("/get/{filename}")
-async def get_uploaded_file(filename: str):
-    filepath = UPLOAD_DIR / filename
-    if not filepath.exists():
-        raise HTTPException(status_code=404, detail="File not found")
-    return FileResponse(filepath)
+async def get_uploaded_file(
+    filename: str,
+    width: int = 0,
+    height: int = 0,
+    quality: MediaQuality = MediaQuality.original,
+):
+    return await media_service.get_uploaded_file(
+        filename=filename, width=width, height=height, quality=quality
+    )
